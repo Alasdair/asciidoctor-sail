@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'json'
 
 module Asciidoctor
@@ -5,14 +7,14 @@ module Asciidoctor
     class Sources
       @sources = {}
 
-      def self.register key, sourcemap_path
-        unless @sources.key?(key) then
-          file = File.read(sourcemap_path)
-          @sources[key] = JSON.parse(file)
-        end
+      def self.register(key, sourcemap_path)
+        return if @sources.key?(key)
+
+        file = File.read(sourcemap_path)
+        @sources[key] = JSON.parse(file)
       end
 
-      def self.get key
+      def self.get(key)
         @sources[key]
       end
     end

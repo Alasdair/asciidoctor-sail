@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'asciidoctor/extensions'
 
 require_relative 'sail/sources'
