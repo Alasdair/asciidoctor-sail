@@ -8,4 +8,6 @@ require_relative 'sail/highlighter'
 
 Asciidoctor::Extensions.register do
   block_macro Asciidoctor::Sail::FunctionBlockMacro
+  include_processor Asciidoctor::Sail::DocCommentIncludeProcessor
+  include_processor Asciidoctor::Sail::WavedromIncludeProcessor
 end

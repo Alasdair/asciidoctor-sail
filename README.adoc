@@ -1,6 +1,6 @@
-= Asciidoctor Sail
+= Sail Asciidoctor Plugin
 
-An Asciidoctor extension for including code from
+An https://asciidoctor.org[Asciidoctor] extension for including code from
 https://github.com/rems-project/sail[Sail] ISA specifications into
 Asciidoc documents, primarily aimed at supporting documentation for
 RISC-V extensions using the

@@ -1,0 +1,56 @@
+:source-highlighter: rouge
+:sail-doc: clauses_doc/doc.json
+
+== Documenting definitions with multiple clauses ==
+
+=== Sail source ===
+
+[source,sail]
+----
+include::clauses.sail[]
+----
+
+=== Result ===
+
+The execute function is a _scattered function_, a Sail feature that
+allows us to split apart the various cases of the function into
+multiple _clauses_. It may seem hard to document these, as the
+function clauses share the same name, and are only distinguished by
+their _pattern_. To include just the `Add` clause, we can use the
+following command:
+
+[source,adoc]
+----
+sail::execute[clause="Add(_, _, _)"]
+----
+
+which produces:
+
+sail::execute[clause="Add(_, _, _)"]
+
+The `clause` attribute allows us to match on the pattern, using syntax
+similar to that found in Sail. The underscore is the _wildcard_
+pattern, that allows us to match anything.
+
+The `Sub` instruction has two function clauses. For the first one
+where the destination register is `0b00000` we can include it using:
+
+[source,adoc]
+----
+sail::execute[clause="Sub(0b00000, _, _)"]
+----
+
+which produces:
+
+sail::execute[clause="Sub(0b00000, _, _)"]
+
+The next clause we can include similarly, like so:
+
+[source,adoc]
+----
+sail::execute[clause="Sub(rd, _, _)"]
+----
+
+which produces:
+
+sail::execute[clause="Sub(rd, _, _)"]

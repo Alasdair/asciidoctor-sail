@@ -1,0 +1,31 @@
+:source-highlighter: rouge
+:sail-doc: function_body_doc/doc.json
+
+== Function body formatting ==
+
+=== Sail source ===
+
+[source,sail]
+----
+include::function_body.sail[]
+----
+
+=== Result ===
+
+include::sailcomment:main[]
+
+For example, the entire function:
+
+sail::main[]
+
+Just the body of the function using `part=body`:
+
+sail::main[part=body]
+
+Unindenting the block using either `unindent` or `dedent`:
+
+sail::main[part=body,dedent]
+
+We can also trim leading and trailing whitespace using `trim` or `strip` (although not useful here):
+
+sail::main[part=body,trim]

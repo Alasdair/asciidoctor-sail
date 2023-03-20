@@ -2,6 +2,7 @@
 
 require 'rouge'
 
+# We define a rouge lexer for Sail source
 class SailLexer < Rouge::RegexLexer
   title 'Sail'
   desc 'Sail ISA Description Language (https://github.com/rems-project/sail)'
@@ -12,27 +13,33 @@ class SailLexer < Rouge::RegexLexer
 
   tyvar = /'[a-zA-Z_?][a-zA-Z0-9_?#]*/
 
-  # We are careful with the definition of operators for comment
-  # openers like // and /* cannot prefix valid operators
+  # We are careful with the definition of operators to ensure openers
+  # like // and /* cannot prefix valid operators
   op_char = '[!%&*+-./:<=>@^|]'
   op_char_no_slash = '[!%&*+-.:<=>@^|]'
   op_char_no_slash_star = '[!%&+-.:<=>@^|]'
+
+  # Sail operators can be suffixed with an underscore followed by a
+  # regular identifier i.e. <=_u for unsigned less that or equal to
   op_suffix = "#{op_char}*(_#{id.source})"
 
+  # Operators of length 1, 2, and n > 2
   operator1 = Regexp.new(op_char)
   operator2 = Regexp.new("(#{op_char}#{op_char_no_slash_star})|(#{op_char_no_slash}#{op_char})")
   operatorn = Regexp.new("(#{op_char}#{op_char_no_slash_star}#{op_suffix})|(#{op_char_no_slash}#{op_char}#{op_suffix})")
 
   def self.keywords
     @keywords ||= Set.new %w[
-      and as by match clause default operator function val let var forall mapping return throw catch if then else register ref pure monadic union foreach do while until repeat
+      and as by match clause operator default end enum else forall foreach function mapping overload throw
+      try catch if in let var ref pure monadic register return scattered struct then type union newtype with
+      val outcome instantiation impl repeat until while do bitfield forwards backwards to
     ]
   end
 
   # Keywords that appear in types, and builtin special types
   def self.keywords_type
     @keywords_type ||= Set.new %w[
-      Int Order Bool bitvector bits inc dec unit
+      dec inc Int Order Bool Type bits bool int option unit
     ]
   end
 
@@ -40,14 +47,14 @@ class SailLexer < Rouge::RegexLexer
   # keywords, i.e. `assert(cond, "message")`
   def self.builtins
     @builtins ||= Set.new %w[
-      assert exit sizeof true false bitone bitzero undefined constraint mutual
+      bitzero bitone exit false sizeof constraint true undefined
     ]
   end
 
   # Reserved and internal keywords, as well as deprecated keywords
   def self.reserved
     @reserved ||= Set.new %w[
-      import module internal_plet internal_return cast effect
+      effect cast constant import module mutual configuration termination_measure internal_plet internal_return
     ]
   end
 
@@ -58,10 +65,10 @@ class SailLexer < Rouge::RegexLexer
   state :root do
     mixin :whitespace
 
-    rule(/0x[0-9A-Fa-f]+/, Num::Hex)
-    rule(/0b[0-1]+/, Num::Bin)
+    rule(/0x[0-9A-Fa-f_]+/, Num::Hex)
+    rule(/0b[0-1_]+/, Num::Bin)
     rule(/[0-9]+\.[0-9]+/, Num::Float)
-    rule(/[0-9]+/, Num::Integer)
+    rule(/[0-9_]+/, Num::Integer)
 
     rule(/"/, Str, :string)
 
@@ -77,6 +84,7 @@ class SailLexer < Rouge::RegexLexer
 
     rule %r{//}, Comment, :line_comment
     rule %r{/\*}, Comment, :comment
+    rule(/\$\[/, Comment::Preproc, :attribute)
     rule(/\$#{id}/, Comment::Preproc, :pragma)
 
     # Function arrows
@@ -115,6 +123,11 @@ class SailLexer < Rouge::RegexLexer
     # Sail escape sequences are a subset of OCaml's https://v2.ocaml.org/manual/lex.html#escape-sequence
     rule(/\\([\\ntbr"']|x[a-fA-F0-9]{2}|[0-7]{3})/, Str::Escape)
     rule(/[^\\"\n]+/, Str)
+  end
+
+  state :attribute do
+    rule(/\]/, Comment::Preproc, :pop!)
+    rule(/[^\]]+/, Comment::Preproc)
   end
 
   state :pragma do

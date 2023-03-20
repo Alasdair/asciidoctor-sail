@@ -1,0 +1,19 @@
+:source-highlighter: rouge
+:sail-doc: anchor_doc/doc.json
+
+== Anchors ==
+
+=== Sail source ===
+
+[source,sail]
+----
+include::anchor.sail[]
+----
+
+=== Result ===
+
+include::sailcomment:my_comment[type=anchor]
+
+include::sailcomment:main[]
+
+sail::main[]

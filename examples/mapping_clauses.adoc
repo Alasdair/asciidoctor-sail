@@ -1,0 +1,33 @@
+:source-highlighter: rouge
+:sail-doc: mapping_clauses_doc/doc.json
+
+== Documenting mapping clauses ==
+
+=== Sail source ===
+
+[source,sail]
+----
+include::mapping_clauses.sail[]
+----
+
+=== Result ===
+
+Sail allows us to specify bi-directional functions, called
+_mappings_. These can be broken into multiple scattered functions in
+the same way that functions can (see the `clauses.adoc` example for
+details). However in this case, we can select the clause we want to
+document by matching on either the left or the right pattern of the
+mapping.
+
+[source,adoc]
+----
+sail::encdec[left-clause="Add(_, _, _)",type=mapping]
+----
+
+which produces:
+
+sail::encdec[left-clause="Add(_, _, _)",type=mapping]
+
+NOTE: The matching language in the `left-clause` and `right-clause`
+attributes is a subset of the Sail pattern language that includes
+constructor patterns, identifiers, wildcards, and binary literals.
