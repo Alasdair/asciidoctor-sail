@@ -1,0 +1,10 @@
+*~
+
+.asciidoctor/
+
+examples/anchor_doc/
+examples/clauses_doc/
+examples/function_body_doc/
+examples/mapping_clauses_doc/
+examples/sail_doc/
+examples/wavedrom_doc/

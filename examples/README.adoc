@@ -16,12 +16,12 @@ will build a corresponding PDF using asciidoctor-pdf.
 
 == Example list
 
-* `function_body` - Shows how to document a simple function, with various options for formatting the function body.
+* `function_body` -- Shows how to document a simple function, with various options for formatting the function body.
 
-* `clauses` - Shows how to document a Sail definition with multiple clauses, such as the `execute` function in the Sail RISC-V model.
+* `clauses` -- Shows how to document a Sail definition with multiple clauses, such as the `execute` function in the Sail RISC-V model.
 
-* `mapping_clauses` - Shows how to document the clauses of bi-directional mappings in Sail, such as the `encdec` function in the Sail RISC-V model.
+* `mapping_clauses` -- Shows how to document the clauses of bi-directional mappings in Sail, such as the `encdec` function in the Sail RISC-V model.
 
-* `anchor` - Shows how to include free-standing documentation comments in the Sail source into processed documentation using _anchors_.
+* `anchor` -- Shows how to include free-standing documentation comments in the Sail source into processed documentation using _anchors_.
 
-* `wavedrom` - Shows how to produce WaveDrom encoding diagrams using https://docs.asciidoctor.org/diagram-extension/latest/[asciidoctor-diagram] and https://wavedrom.com/[WaveDrom].
+* `wavedrom` -- Shows how to produce WaveDrom encoding diagrams using https://docs.asciidoctor.org/diagram-extension/latest/[asciidoctor-diagram] and https://wavedrom.com/[WaveDrom].

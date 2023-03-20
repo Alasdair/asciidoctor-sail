@@ -14,12 +14,12 @@ include::wavedrom.sail[]
 
 The diagram for the Add clause:
 
-include::sailwavedrom:encdec[left_clause="Add(_, _, _)",type=mapping,right]
+include::sailwavedrom:encdec[left-clause="Add(_, _, _)",type=mapping,right]
 
 The diagram for the Sub clause. Note how we can use underscores to skip labels:
 
-include::sailwavedrom:encdec[left_clause="Sub(_, _, _)",type=mapping,right]
+include::sailwavedrom:encdec[left-clause="Sub(_, _, _)",type=mapping,right]
 
 The `$[wavedrom labels]` attribute can be omitted, as with `Xor`:
 
-include::sailwavedrom:encdec[left_clause="Xor(_, _, _)",type=mapping,right]
+include::sailwavedrom:encdec[left-clause="Xor(_, _, _)",type=mapping,right]
