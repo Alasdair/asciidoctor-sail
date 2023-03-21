@@ -31,6 +31,27 @@ module Asciidoctor
         attrs.delete('split') { '' }
       end
 
+      def read_source(json, part)
+        source = ''
+        
+        if json.is_a? String
+          source = json
+        elsif json[part].is_a? String
+          source = json[part]
+        else
+          file = File.read(json['file'])
+          loc = json[part]['loc']
+
+          # Get the source code, adjusting for the indentation of the first line of the span
+          indent = loc[2] - loc[1]
+
+          source = file.byteslice(loc[2], loc[5] - loc[2])
+          source = (' ' * indent) + source
+        end
+
+        source
+      end
+
       def get_sail_object(json, target, attrs)
         type = get_type(attrs)
         json = json["#{type}s"]
@@ -67,6 +88,14 @@ module Asciidoctor
               break
             end
           end
+        elsif attrs.key? 'grep'
+          grep = attrs.delete('grep')
+          json.each do |child|
+            source = read_source(child, 'body')
+            if source =~ Regexp.new(grep)
+              json = child
+            end
+          end
         end
 
         json
@@ -90,6 +119,37 @@ module Asciidoctor
           indent = line_indent if indent == -1 || line_indent < indent
         end
         indent
+      end
+
+      def get_source(doc, target, attrs)
+        json = get_sourcemap doc, attrs
+        json = get_sail_object json, target, attrs
+        dedent = attrs.any? { |k, v| (k.is_a? Integer) && %w[dedent unindent].include?(v) }
+        strip = attrs.any? { |k, v| (k.is_a? Integer) && %w[trim strip].include?(v) }
+
+        part = get_part attrs
+        split = get_split attrs
+
+        source = ''
+        if split != ''
+          source = json['splits'][split]
+        else
+          source = read_source(json, part)
+        end
+          
+        source.strip! if strip
+
+        if dedent
+          lines = ''
+          min = minindent 4, source
+
+          source.each_line do |line|
+            lines += line[min..]
+          end
+          source = lines
+        end
+
+        source
       end
 
       def match_clause(desc, json)
@@ -129,7 +189,7 @@ module Asciidoctor
       end
     end
 
-    class FunctionBlockMacro < ::Asciidoctor::Extensions::BlockMacroProcessor
+    class SourceBlockMacro < ::Asciidoctor::Extensions::BlockMacroProcessor
       include SourceMacro
 
       use_dsl
@@ -137,44 +197,26 @@ module Asciidoctor
       named :sail
 
       def process(parent, target, attrs)
-        # Get the revelant option from the attrs
-        json = get_sourcemap parent.document, attrs
-        json = get_sail_object json, target, attrs
-        dedent = attrs.any? { |k, v| (k.is_a? Integer) && %w[dedent unindent].include?(v) }
-        strip = attrs.any? { |k, v| (k.is_a? Integer) && %w[trim strip].include?(v) }
-
-        part = get_part attrs
-        split = get_split attrs
-
-        source = ''
-        if split != ''
-          source = json['splits'][split]
-        elsif json['source'].is_a? String
-          source = json[part]
-        else
-          file = File.read(json['file'])
-          loc = json[part]['loc']
-
-          # Get the source code, adjusting for the indentation of the first line of the span
-          indent = loc[2] - loc[1]
-
-          source = file.byteslice(loc[2], loc[5] - loc[2])
-          source = (' ' * indent) + source
-        end
-          
-        source.strip! if strip
-
-        if dedent
-          lines = ''
-          min = minindent 4, source
-
-          source.each_line do |line|
-            lines += line[min..]
-          end
-          source = lines
-        end
+        source = get_source parent.document, target, attrs
 
         create_listing_block parent, source, { 'style' => 'source', 'language' => 'sail' }
+      end
+    end
+
+    class SourceIncludeProcessor < ::Asciidoctor::Extensions::IncludeProcessor
+      include SourceMacro
+
+      def handles? target
+        target.start_with? 'sail:'
+      end
+
+      def process doc, reader, target, attrs
+        target.delete_prefix! 'sail:'
+
+        source = get_source doc, target, attrs
+
+        reader.push_include source, target, target, 1, {}
+        reader
       end
     end
 

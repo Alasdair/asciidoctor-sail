@@ -39,7 +39,7 @@ class SailLexer < Rouge::RegexLexer
   # Keywords that appear in types, and builtin special types
   def self.keywords_type
     @keywords_type ||= Set.new %w[
-      dec inc Int Order Bool Type bits bool int option unit
+      dec inc Int Order Bool Type bits bool int option unit implicit
     ]
   end
 
