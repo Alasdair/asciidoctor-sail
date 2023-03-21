@@ -1,0 +1,49 @@
+:source-highlighter: rouge
+:sail-doc: split_doc/doc.json
+
+== Splitting Sail definitions ==
+
+=== Sail source ===
+
+[source,sail]
+----
+include::split.sail[]
+----
+
+=== Result ===
+
+Sometimes we have a Sail function that corresponds to multiple
+functions we want to document. Here we can split the function by
+applying _constant propagation_ with the `split` attribute in
+Sail. This works when the function has an enumeration as an argument.
+
+WARNING: This feature is somewhat experimental as it relies on calling
+Sail's constant propagation pass and pretty printer during document
+bundle preparation, neither of which were really intended for this use
+case, so while it works for simple functions you might run into places
+where it fails for more complex inputs. Notice also that this happens
+after overloads have been resolved, so we see `rX` and `wX` in the
+below examples, rather than the overload `X`.
+
+As an example, here we can take the above `instr` which implements
+both `ADD` and `SUB` and generate just the `ADD` case:
+
+[source,adoc]
+----
+sail::instr[split=ADD]
+----
+
+which produces:
+
+sail::instr[split=ADD]
+
+Alternatively, for the `SUB` case:
+
+[source,adoc]
+----
+sail::instr[split=SUB]
+----
+
+produces
+
+sail::instr[split=SUB]

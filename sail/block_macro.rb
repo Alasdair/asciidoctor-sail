@@ -27,6 +27,10 @@ module Asciidoctor
         attrs.delete('part') { 'source' }
       end
 
+      def get_split(attrs)
+        attrs.delete('split') { '' }
+      end
+
       def get_sail_object(json, target, attrs)
         type = get_type(attrs)
         json = json["#{type}s"]
@@ -140,9 +144,12 @@ module Asciidoctor
         strip = attrs.any? { |k, v| (k.is_a? Integer) && %w[trim strip].include?(v) }
 
         part = get_part attrs
+        split = get_split attrs
 
-        source = ""
-        if json['source'].is_a? String
+        source = ''
+        if split != ''
+          source = json['splits'][split]
+        elsif json['source'].is_a? String
           source = json[part]
         else
           file = File.read(json['file'])

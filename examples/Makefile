@@ -6,7 +6,7 @@ default: all
 	sail -doc $(basename $@).sail -o $(basename $@)_doc -doc_file $(basename $@).sail -doc_embed plain
 	asciidoctor-pdf -r ../sail.rb -r asciidoctor-diagram $(basename $@).adoc --trace
 
-all: wavedrom.pdf function_body.pdf clauses.pdf mapping_clauses.pdf anchor.pdf
+all: wavedrom.pdf function_body.pdf clauses.pdf mapping_clauses.pdf anchor.pdf split.pdf
 
 update_built: all
 	mkdir -p built

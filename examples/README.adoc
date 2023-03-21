@@ -27,3 +27,5 @@ There are pre-built versions of each of the examples in the `built` subdirectory
 * `anchor` -- Shows how to include free-standing documentation comments in the Sail source into processed documentation using _anchors_.
 
 * `wavedrom` -- Shows how to produce WaveDrom encoding diagrams using https://docs.asciidoctor.org/diagram-extension/latest/[asciidoctor-diagram] and https://wavedrom.com/[WaveDrom].
+
+* `split` -- Shows how Sail functions implementing multiple instructions can be split
