@@ -169,7 +169,7 @@ module Asciidoctor
           elsif json['type'] == 'tuple'
             tuples = json['patterns']
           else
-            return false
+            tuples = [json]
           end
 
           results = []
@@ -239,8 +239,12 @@ module Asciidoctor
           key = 'left_wavedrom'
         end
 
-        diagram = "[wavedrom, , svg]\n....\n#{json[key]}\n...."
- 
+        if attrs.key? 'raw'
+          diagram = "[wavedrom, , svg]\n....\n#{json[key]}\n...."
+        else
+          diagram = json[key]
+        end
+          
         reader.push_include diagram, target, target, 1, {}
         reader
       end
