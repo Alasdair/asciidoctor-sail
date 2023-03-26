@@ -240,9 +240,9 @@ module Asciidoctor
         end
 
         if attrs.key? 'raw'
-          diagram = "[wavedrom, , svg]\n....\n#{json[key]}\n...."
-        else
           diagram = json[key]
+        else
+          diagram = "[wavedrom, , svg]\n....\n#{json[key]}\n...."
         end
           
         reader.push_include diagram, target, target, 1, {}

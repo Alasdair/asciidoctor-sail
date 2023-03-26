@@ -1,0 +1,73 @@
+:function-body: examples/function_body.json
+
+=== Function body formatting
+
+In this example, we show how to include the source code from a Sail function.
+
+==== Sail source
+
+[source,sail]
+----
+include::function_body.sail[]
+----
+
+==== Result
+
+include::sailcomment:main[from=function-body]
+
+For example, the entire function:
+
+[source,adoc]
+----
+sail::main[from=function-body]
+----
+
+sail::main[from=function-body]
+
+Just the body of the function using `part=body`:
+
+[source,adoc]
+----
+sail::main[from=function-body,part=body]
+----
+
+sail::main[from=function-body,part=body]
+
+Unindenting the block using either `unindent` or `dedent`:
+
+[source,adoc]
+----
+sail::main[from=function-body,part=body,dedent]
+----
+
+sail::main[from=function-body,part=body,dedent]
+
+We can also trim leading and trailing whitespace using `trim` or `strip` (although not useful here):
+
+[source,adoc]
+----
+sail::main[from=function-body,part=body,trim]
+----
+
+sail::main[from=function-body,part=body,trim]
+
+Rather than using the `sail` block macro directly we can also use an include macro, like so:
+
+[source,adoc]
+-----
+[source,sail]
+----
+\include::sail:main[from=function-body]
+----
+-----
+
+[source,sail]
+----
+include::sail:main[from=function-body]
+----
+
+The advantage of using the include macro is it lets us include
+multiple definitions within the same asciidoc source block, at the
+expense of being more verbose. It can also be used in places where the
+asciidoc processor doesn't like seeing a block macro, but would allow
+a block.

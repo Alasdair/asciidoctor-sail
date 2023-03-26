@@ -1,0 +1,33 @@
+:anchor: examples/anchor.json
+
+=== Anchors
+
+An _anchor_ is a special Sail attribute `$anchor` that we can attach
+documentation comments to. This allows us to include comments that are
+not otherwise associated with any toplevel Sail definition. The anchor
+directive provides the name we use to reference the comment in the
+asciidoc source.
+
+==== Sail source
+
+[source,sail]
+----
+include::anchor.sail[]
+----
+
+==== Result
+
+[source,adoc]
+----
+\include::sailcomment:my_comment[from=anchor,type=anchor]
+
+\include::sailcomment:main[from=anchor]
+
+\sail::main[from=anchor]
+----
+
+include::sailcomment:my_comment[from=anchor,type=anchor]
+
+include::sailcomment:main[from=anchor]
+
+sail::main[from=anchor]

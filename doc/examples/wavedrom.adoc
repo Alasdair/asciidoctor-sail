@@ -1,0 +1,37 @@
+:wavedrom: examples/wavedrom.json
+
+=== Wavedrom encoding diagrams
+
+==== Sail source
+
+[source,sail]
+----
+include::wavedrom.sail[]
+----
+
+==== Result
+
+The diagram for the Add clause:
+
+[source,adoc]
+----
+\include::sailwavedrom:encdec[from=wavedrom,left-clause="Add(_, _, _)",type=mapping,right]
+----
+
+The diagram for the Sub clause. Note how we can use underscores to skip labels:
+
+[source,adoc]
+----
+\include::sailwavedrom:encdec[from=wavedrom,left-clause="Sub(_, _, _)",type=mapping,right]
+----
+
+include::sailwavedrom:encdec[from=wavedrom,left-clause="Sub(_, _, _)",type=mapping,right]
+
+The `$[wavedrom labels]` attribute can be omitted, as with `Xor`:
+
+[source,adoc]
+----
+\include::sailwavedrom:encdec[from=wavedrom,left-clause="Xor(_, _, _)",type=mapping,right]
+----
+
+include::sailwavedrom:encdec[from=wavedrom,left-clause="Xor(_, _, _)",type=mapping,right]

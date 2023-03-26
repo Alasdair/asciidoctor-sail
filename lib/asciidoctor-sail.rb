@@ -2,9 +2,9 @@
 
 require 'asciidoctor/extensions'
 
-require_relative 'sail/sources'
-require_relative 'sail/block_macro'
-require_relative 'sail/highlighter'
+require_relative 'asciidoctor-sail/sources'
+require_relative 'asciidoctor-sail/macros'
+require_relative 'asciidoctor-sail/highlighter'
 
 Asciidoctor::Extensions.register do
   block_macro Asciidoctor::Sail::SourceBlockMacro

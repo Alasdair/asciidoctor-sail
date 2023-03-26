@@ -1,10 +1,9 @@
 *~
+*.gem
 
 .asciidoctor/
 
-examples/anchor_doc/
-examples/clauses_doc/
-examples/function_body_doc/
-examples/mapping_clauses_doc/
-examples/sail_doc/
-examples/wavedrom_doc/
+doc/sail_doc
+doc/*.svg
+doc/examples/*.json
+doc/sail_to_asciidoc.pdf

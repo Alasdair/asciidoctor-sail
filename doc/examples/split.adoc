@@ -1,16 +1,6 @@
-:source-highlighter: rouge
-:sail-doc: split_doc/doc.json
+:split: examples/split.json
 
-== Splitting Sail definitions ==
-
-=== Sail source ===
-
-[source,sail]
-----
-include::split.sail[]
-----
-
-=== Result ===
+=== Splitting Sail definitions
 
 Sometimes we have a Sail function that corresponds to multiple
 functions we want to document. Here we can split the function by
@@ -25,25 +15,34 @@ where it fails for more complex inputs. Notice also that this happens
 after overloads have been resolved, so we see `rX` and `wX` in the
 below examples, rather than the overload `X`.
 
+==== Sail source
+
+[source,sail]
+----
+include::split.sail[]
+----
+
+==== Result
+
 As an example, here we can take the above `instr` which implements
 both `ADD` and `SUB` and generate just the `ADD` case:
 
 [source,adoc]
 ----
-sail::instr[split=ADD]
+sail::instr[from=split,split=ADD]
 ----
 
 which produces:
 
-sail::instr[split=ADD]
+sail::instr[from=split,split=ADD]
 
 Alternatively, for the `SUB` case:
 
 [source,adoc]
 ----
-sail::instr[split=SUB]
+sail::instr[from=split,split=SUB]
 ----
 
 produces
 
-sail::instr[split=SUB]
+sail::instr[from=split,split=SUB]

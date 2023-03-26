@@ -153,11 +153,10 @@ definitions.
   older Sail to Latex documentation generation has been ported to the
   new documentation system written for this plugin.
 
-== Asciidoc commands
-
-The Sail to Asciidoc repository contains several examples
-demonstrating the various commands in the `examples` subdirectory,
-with the README in that directory explaining the set of examples.
+* `-doc_bundle <file>` The name of the generated documentation bundle
+  file. By default this is `doc.json`. It will be placed in the folder
+  specified by the output `-o` option, which defaults to a folder
+  named `sail_doc`.
 
 === Syntax highlighting
 
@@ -166,3 +165,40 @@ Ruby syntax highlighter supported by asciidoctor and
 asciidoctor-pdf. If another highlighter with a fixed set of supported
 languages is used, everything will still work, but without
 highlighting.
+
+== Asciidoc commands
+
+The Sail to Asciidoc repository contains several examples
+demonstrating the various commands in the `examples`
+subdirectory. These examples are included below.
+
+== Examples
+
+=== Working with multiple Sail files
+
+The documentation bundle is specified using an asciidoc attribute, for example:
+
+[source,adoc]
+----
+:sail-doc: sail_doc/doc.json
+----
+
+Each command takes a `from` parameter which specifies which bundle to
+pull the source from. This defaults to `from=sail-doc` if left
+unspecified. In the following examples this is used for each separate
+example, so you will see `from=<file>` which corresponds to a
+documentation bundle generated in `examples/<file>.json`.
+
+include::examples/function_body.adoc[]
+
+include::examples/clauses.adoc[]
+
+include::examples/mapping_clauses.adoc[]
+
+include::examples/anchor.adoc[]
+
+include::examples/span.adoc[]
+
+include::examples/wavedrom.adoc[]
+
+include::examples/split.adoc[]

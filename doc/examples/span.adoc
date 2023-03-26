@@ -1,0 +1,23 @@
+:span: examples/span.json
+
+=== Spans
+
+What if we want to include some arbitrary span of Sail source rather
+than select definitions? This can be acheived using `$span` directives
+in Sail.
+
+==== Sail source
+
+[source,sail]
+----
+include::span.sail
+----
+
+==== Result
+
+[source,adoc]
+----
+sail::PREAMBLE[from=span,type=span]
+----
+
+sail::PREAMBLE[from=span,type=span]
