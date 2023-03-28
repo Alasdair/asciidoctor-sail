@@ -32,7 +32,7 @@ class SailLexer < Rouge::RegexLexer
     @keywords ||= Set.new %w[
       and as by match clause operator default end enum else forall foreach function mapping overload throw
       try catch if in let var ref pure monadic register return scattered struct then type union newtype with
-      val outcome instantiation impl repeat until while do bitfield forwards backwards to
+      val outcome instantiation impl repeat until while do bitfield forwards backwards to from
     ]
   end
 

@@ -5,3 +5,24 @@ https://github.com/rems-project/sail[Sail] ISA specifications into
 Asciidoc documents, primarily aimed at supporting documentation for
 RISC-V extensions using the
 https://github.com/riscv/sail-riscv[sail-riscv] model.
+
+== Installation
+
+asciidoctor-sail is published on https://rubygems.org[rubygems], so it can be installed with gem install:
+
+[source,sh]
+----
+gem install asciidoctor-sail
+----
+
+The requirements are simply asciidoctor itself, or asciidoctor and
+asciidoctor-diagram if encoding diagrams are generated (which also
+require the https://wavedrom.com[WaveDrom] editor to be installed).
+asciidoctor-pdf is also supported for PDF generation.
+
+== Documentation
+
+Documentation is available as a PDF
+https://github.com/Alasdair/asciidoctor-sail/blob/2e959a618a01455266568e1e1e5460fd87fb1859/doc/built/sail_to_asciidoc.pdf[here]. The
+PDF is itself built with asciidoctor-pdf and asciidoctor-sail, using
+the various examples in `doc/examples`.
