@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'set'
+
 module Asciidoctor
   module Sail
     module SourceMacro
@@ -16,7 +18,7 @@ module Asciidoctor
           raise "#{PLUGIN_NAME}: Version does not match version in source map #{source_map}"
         end
 
-        json
+        return json, from
       end
 
       def get_type(attrs)
@@ -98,7 +100,7 @@ module Asciidoctor
           end
         end
 
-        json
+        return json, type
       end
 
       # Compute the minimum indentation for any line in a source block
@@ -122,8 +124,8 @@ module Asciidoctor
       end
 
       def get_source(doc, target, attrs)
-        json = get_sourcemap doc, attrs
-        json = get_sail_object json, target, attrs
+        json, from = get_sourcemap doc, attrs
+        json, type = get_sail_object json, target, attrs
         dedent = attrs.any? { |k, v| (k.is_a? Integer) && %w[dedent unindent].include?(v) }
         strip = attrs.any? { |k, v| (k.is_a? Integer) && %w[trim strip].include?(v) }
 
@@ -149,7 +151,7 @@ module Asciidoctor
           source = lines
         end
 
-        source
+        return source, type, from
       end
 
       def match_clause(desc, json)
@@ -196,10 +198,25 @@ module Asciidoctor
 
       named :sail
 
+      @@ids = Set.new()
+      
       def process(parent, target, attrs)
-        source = get_source parent.document, target, attrs
+        source, type, from = get_source parent.document, target, attrs
 
-        create_listing_block parent, source, { 'style' => 'source', 'language' => 'sail' }
+        if type == 'function' then
+          id = "#{from}-#{target}"
+        else
+          id = "#{from}-#{type}-#{target}"
+        end
+        
+        if not @@ids.member?(id) then
+          @@ids.add(id)
+          block = create_listing_block parent, source, { 'id' => id, 'style' => 'source', 'language' => 'sail' }
+        else
+          block = create_listing_block parent, source, { 'style' => 'source', 'language' => 'sail' }
+        end
+
+        block
       end
     end
 
@@ -213,7 +230,7 @@ module Asciidoctor
       def process doc, reader, target, attrs
         target.delete_prefix! 'sail:'
 
-        source = get_source doc, target, attrs
+        source, type, from = get_source doc, target, attrs
 
         reader.push_include source, target, target, 1, {}
         reader
@@ -229,8 +246,8 @@ module Asciidoctor
 
       def process doc, reader, target, attrs
         target.delete_prefix! 'sailwavedrom:'
-        json = get_sourcemap doc, attrs
-        json = get_sail_object json, target, attrs
+        json, from = get_sourcemap doc, attrs
+        json, type = get_sail_object json, target, attrs
         
         key = 'wavedrom'
         if attrs.any? { |k, v| (k.is_a? Integer) && v == 'right' }
@@ -259,8 +276,8 @@ module Asciidoctor
 
       def process doc, reader, target, attrs
         target.delete_prefix! 'sailcomment:'
-        json = get_sourcemap doc, attrs
-        json = get_sail_object json, target, attrs
+        json, from = get_sourcemap doc, attrs
+        json, type = get_sail_object json, target, attrs
 
         if json.nil? || json.is_a?(Array)
           raise "#{PLUGIN_NAME}: Could not find Sail object for #{target} when processing include::sailcomment. You may need to specify a clause."

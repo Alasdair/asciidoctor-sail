@@ -31,3 +31,11 @@ sail::encdec[from=mapping-clauses,left-clause="Add(_, _, _)",type=mapping]
 NOTE: The matching language in the `left-clause` and `right-clause`
 attributes is a subset of the Sail pattern language that includes
 constructor patterns, identifiers, wildcards, and binary literals.
+
+Here we see the usage of the `type` attribute. By default the `sail`
+macro will include functions (i.e. `type=function`), but here we want
+to reference a mapping. The argument of `type` is the toplevel Sail
+keyword for the type of definition we want to include, so it can be
+`function`, `mapping`, `val`, `type`, `register`, `let`. We use the
+`type=type` for all top-level Sail type definitions, such as unions,
+enums, and structs.

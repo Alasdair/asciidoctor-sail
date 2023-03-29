@@ -15,7 +15,7 @@ include::function_body.sail[]
 
 include::sailcomment:main[from=function-body]
 
-For example, the entire function:
+For example, to format the entire function:
 
 [source,adoc]
 ----
@@ -24,7 +24,16 @@ sail::main[from=function-body]
 
 sail::main[from=function-body]
 
-Just the body of the function using `part=body`:
+If we want to reference an included function, we can use an Asciidoc
+cross-reference. The sail macro will generate an id using the name of
+the Sail function and the `from` attribute. In this example, we can
+use `pass:[&lt;&lt;function-body-main&gt;&gt;]` to reference the
+function which results in <<function-body-main>>. In can also be given
+a name in the standard Asciidoc way using
+`pass:[&lt;&lt;function-body-main,main&gt;&gt;]`, which results in
+<<function-body-main,main>>.
+
+We can format just the body of the function using `part=body`:
 
 [source,adoc]
 ----
@@ -33,7 +42,7 @@ sail::main[from=function-body,part=body]
 
 sail::main[from=function-body,part=body]
 
-Unindenting the block using either `unindent` or `dedent`:
+The body can be unindented the block using either `unindent` or `dedent`:
 
 [source,adoc]
 ----
@@ -42,7 +51,7 @@ sail::main[from=function-body,part=body,dedent]
 
 sail::main[from=function-body,part=body,dedent]
 
-We can also trim leading and trailing whitespace using `trim` or `strip` (although not useful here):
+We can also trim leading and trailing whitespace using `trim` or `strip` (although this is not useful here):
 
 [source,adoc]
 ----
@@ -71,3 +80,7 @@ multiple definitions within the same asciidoc source block, at the
 expense of being more verbose. It can also be used in places where the
 asciidoc processor doesn't like seeing a block macro, but would allow
 a block.
+
+A disadvantage of using the include block is that it doesn't
+automatically generate an anchor for us to cross reference. An anchor
+would instead have to be manually added to the block.

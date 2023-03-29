@@ -23,7 +23,7 @@ include::anchor.sail[]
 
 \include::sailcomment:main[from=anchor]
 
-\sail::main[from=anchor]
+sail::main[from=anchor]
 ----
 
 include::sailcomment:my_comment[from=anchor,type=anchor]

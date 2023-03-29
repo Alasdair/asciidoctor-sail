@@ -2,6 +2,8 @@
 :sail-doc: sail_doc/doc.json
 
 = Sail to Asciidoc
+Alasdair Armstrong
+:toc:
 
 == Introduction
 
@@ -15,10 +17,10 @@ in principle be used for any ISA description written in Sail.
 
 There are two main components to this. First, there is an extension to
 Sail which produces _documentation bundles_ -- files indexing the
-contents of a Sail source file. These documentation bundles are used
-by an asciidoctor plugin, allowing Sail source code to be included
-into asciidoc manuals without duplicating the code, which would
-invariably lead to it getting out of sync over time.
+contents of a Sail source file. Second, there is an asciidoctor
+plugin, which uses these bundles to include Sail source code in
+asciidoc manuals without duplicating the code, which would invariably
+lead to it getting out of sync over time.
 
 This also enables some fancier features, for example, we can use the
 information from the Sail source to automatically generate encoding
@@ -49,7 +51,8 @@ documentation for them using:
 sail -doc a.sail b.sail c.sail
 ----
 
-to produce only documentation for `c.sail` (which may still depend on the other files) to type-check, we can use:
+to produce only documentation for `c.sail` (which may still depend on
+the other files), we can use:
 
 [source,sh]
 ----
