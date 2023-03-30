@@ -22,21 +22,46 @@ plugin, which uses these bundles to include Sail source code in
 asciidoc manuals without duplicating the code, which would invariably
 lead to it getting out of sync over time.
 
-This also enables some fancier features, for example, we can use the
-information from the Sail source to automatically generate encoding
-diagrams using asciidoctor diagram. For example:
+== A RISC-V example
+
+Consider the JAL instruction from the currently hand-written RISC-V
+unpriv specification.
+
+image::jal-manual.png[]
+
+We can generate the same diagram from the Sail source code that
+defines the JAL instruction:
 
 include::sailwavedrom:encdec[left-clause="RISCV_JAL(_, _)",right,type=mapping]
 
-can be generated from the following Sail:
+Other than the opcode containing the actual bits, the automatically
+generated image is almost identical. To generate this, we had to enter:
+
+[source,adoc]
+----
+\include::sailwavedrom:encdec[left-clause="RISCV_JAL(_, _)",right,type=mapping]
+----
+
+Which accesses the encoding information contained in the following Sail:
 
 [source,sail]
 ----
 include::jal.sail[]
 ----
 
-which uses a Sail attribute to inform the documentation generator
-about the labels for the encoding diagram.
+We can use an attribute in the Sail source to include information like
+the labels that would otherwise not be included.
+
+We can also include the (body of the) Sail function that defines the JAL instruction using
+
+[source,adoc]
+----
+sail::execute[clause="RISCV_JAL(_, _)",part=body,unindent]
+----
+
+which produces:
+
+sail::execute[clause="RISCV_JAL(_, _)",part=body,unindent]
 
 == Documentation bundles
 
