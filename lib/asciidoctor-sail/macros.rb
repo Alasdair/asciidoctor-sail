@@ -35,7 +35,7 @@ module Asciidoctor
 
       def read_source(json, part)
         source = ''
-        
+
         if json.is_a? String
           source = json
         elsif json[part].is_a? String
@@ -138,7 +138,7 @@ module Asciidoctor
         else
           source = read_source(json, part)
         end
-          
+
         source.strip! if strip
 
         if dedent
@@ -162,7 +162,7 @@ module Asciidoctor
           if patterns.length == 1
             patterns = patterns[0]
           end
-          
+
           match_clause ::Regexp.last_match(2), patterns
         elsif desc.length.positive? && desc[0] == '('
           tuples = nil
@@ -199,7 +199,7 @@ module Asciidoctor
       named :sail
 
       @@ids = Set.new()
-      
+
       def process(parent, target, attrs)
         source, type, from = get_source parent.document, target, attrs
 
@@ -208,7 +208,7 @@ module Asciidoctor
         else
           id = "#{from}-#{type}-#{target}"
         end
-        
+
         if not @@ids.member?(id) then
           @@ids.add(id)
           block = create_listing_block parent, source, { 'id' => id, 'style' => 'source', 'language' => 'sail' }
@@ -248,7 +248,7 @@ module Asciidoctor
         target.delete_prefix! 'sailwavedrom:'
         json, from = get_sourcemap doc, attrs
         json, type = get_sail_object json, target, attrs
-        
+
         key = 'wavedrom'
         if attrs.any? { |k, v| (k.is_a? Integer) && v == 'right' }
           key = 'right_wavedrom'
@@ -259,9 +259,9 @@ module Asciidoctor
         if attrs.key? 'raw'
           diagram = json[key]
         else
-          diagram = "[wavedrom, , svg]\n....\n#{json[key]}\n...."
+          diagram = "[wavedrom, ,]\n....\n#{json[key]}\n...."
         end
-          
+
         reader.push_include diagram, target, target, 1, {}
         reader
       end
@@ -269,7 +269,7 @@ module Asciidoctor
 
     class DocCommentIncludeProcessor < ::Asciidoctor::Extensions::IncludeProcessor
       include SourceMacro
-      
+
       def handles? target
         target.start_with? 'sailcomment:'
       end

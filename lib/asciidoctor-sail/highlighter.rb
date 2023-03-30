@@ -126,8 +126,9 @@ class SailLexer < Rouge::RegexLexer
   end
 
   state :attribute do
+    rule(/\[/, Comment::Preproc, :attribute)
     rule(/\]/, Comment::Preproc, :pop!)
-    rule(/[^\]]+/, Comment::Preproc)
+    rule(/[^\[\]]+/, Comment::Preproc)
   end
 
   state :pragma do
