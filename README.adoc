@@ -23,6 +23,6 @@ asciidoctor-pdf is also supported for PDF generation.
 == Documentation
 
 Documentation is available as a PDF
-https://github.com/Alasdair/asciidoctor-sail/blob/2e959a618a01455266568e1e1e5460fd87fb1859/doc/built/sail_to_asciidoc.pdf[here]. The
+https://github.com/Alasdair/asciidoctor-sail/blob/master/doc/built/sail_to_asciidoc.pdf[here]. The
 PDF is itself built with asciidoctor-pdf and asciidoctor-sail, using
 the various examples in `doc/examples`.
