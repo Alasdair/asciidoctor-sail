@@ -41,7 +41,13 @@ module Asciidoctor
         elsif json[part].is_a? String
           source = json[part]
         else
-          file = File.read(json['file'])
+          path = json['file']
+
+          if not File.exist?(path)
+            raise "#{PLUGIN_NAME}: File #{path} does not exist"
+          end
+
+          file = File.read(path)
           loc = json[part]['loc']
 
           # Get the source code, adjusting for the indentation of the first line of the span
@@ -256,7 +262,7 @@ module Asciidoctor
           key = 'left_wavedrom'
         end
 
-        if attrs.key? 'raw'
+        if attrs.any? { |k, v| (k.is_a? Integer) && v == 'raw' }
           diagram = json[key]
         else
           diagram = "[wavedrom, ,]\n....\n#{json[key]}\n...."
@@ -287,7 +293,7 @@ module Asciidoctor
         if comment.nil?
           raise "#{PLUGIN_NAME}: No documentation comment for Sail object #{target}"
         end
-        
+
         reader.push_include comment, target, target, 1, attrs
         reader
       end

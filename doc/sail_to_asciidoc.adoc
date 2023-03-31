@@ -15,14 +15,38 @@ producing documentation for the
 https://github.com/riscv/sail-riscv[sail-riscv] specification, but can
 in principle be used for any ISA description written in Sail.
 
-There are two main components to this. First, there is an extension to
-Sail which produces _documentation bundles_ -- files indexing the
-contents of a Sail source file. Second, there is an asciidoctor
-plugin, which uses these bundles to include Sail source code in
-asciidoc manuals without duplicating the code, which would invariably
-lead to it getting out of sync over time.
+ISA specifications typically describe the behaviour of
+instructions with a combination of prose, tables, diagrams, and
+pseudocode for each instruction. Sail is a language intended to
+support precise definition of real-world ISA semantics, enabling what
+was formally pseudocode to become executable and testable. It supports
+emulation for architectural compliance tests, and can generate
+definitions for theorem provers (such ash https://coq.inria.fr/[Coq]
+and https://isabelle.in.tum.de[Isabelle]) to support mechanised
+reasoning over an ISA specification. It is a first-order imperative
+language, with a syntax inspired the existing pseudocode used in
+various architecture manuals, and with influences modern programming
+languages like Go, Swift, and Rust. The intent is it will therefore be
+accessible to engineers familiar with these languages or existing ISA
+pseudocode.
+
+Until now, we have had some ad-hoc methods to incorporate Sail source
+into LaTeX documents, but here we present a more robust and extensible
+system for incorporating Sail definitions into Asciidoc manuals. There
+are two main components to this. First, there is an extension to Sail
+which produces _documentation bundles_ -- files indexing the contents
+of a Sail source file. Second, there is an asciidoctor plugin, which
+uses these bundles to include Sail source code in asciidoc manuals
+without duplicating the code, which would invariably lead to it
+getting out of sync over time.
 
 == A RISC-V example
+
+Here we show how we can take a RISC-V instruction, and generate an
+encoding diagram matching those used in the existing Asciidoc port of
+the unpriv specification. We can also reference and typeset the Sail
+source from the authorative model, without requiring that it is simply
+copy-pasted.
 
 Consider the JAL instruction from the currently hand-written RISC-V
 unpriv specification.
@@ -52,14 +76,16 @@ include::jal.sail[]
 We can use an attribute in the Sail source to include information like
 the labels that would otherwise not be included.
 
-We can also include the (body of the) Sail function that defines the JAL instruction using
+We can also include the (body of the) Sail function that defines the
+JAL instruction using
 
 [source,adoc]
 ----
 sail::execute[clause="RISCV_JAL(_, _)",part=body,unindent]
 ----
 
-which produces:
+This fetches the source code for the JAL instruction from the Sail
+model, and typesets it in our Asciidoc document as follows:
 
 sail::execute[clause="RISCV_JAL(_, _)",part=body,unindent]
 
