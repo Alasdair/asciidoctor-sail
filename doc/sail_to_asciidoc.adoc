@@ -19,16 +19,16 @@ ISA specifications typically describe the behaviour of
 instructions with a combination of prose, tables, diagrams, and
 pseudocode for each instruction. Sail is a language intended to
 support precise definition of real-world ISA semantics, enabling what
-was formally pseudocode to become executable and testable. It supports
-emulation for architectural compliance tests, and can generate
+was previously just pseudocode to become executable and testable, while remaining readable for documentation. Sail supports
+emulation for architectural compliance tests; it supports symbolic evaluation and the isla-axiomatic tooling for computing the allowed behaviour of relaxed-concurrency litmus tests, and it can generate
 definitions for theorem provers (such ash https://coq.inria.fr/[Coq]
 and https://isabelle.in.tum.de[Isabelle]) to support mechanised
-reasoning over an ISA specification. It is a first-order imperative
-language, with a syntax inspired the existing pseudocode used in
-various architecture manuals, and with influences modern programming
+reasoning over an ISA specification. Sail is a first-order imperative
+language, with a syntax inspired by the existing pseudocode used in
+various architecture manuals, and with influences from C and from modern programming
 languages like Go, Swift, and Rust. The intent is it will therefore be
-accessible to engineers familiar with these languages or existing ISA
-pseudocode.
+accessible to engineers familiar with existing ISA
+pseudocode or with these languages.
 
 Until now, we have had some ad-hoc methods to incorporate Sail source
 into LaTeX documents, but here we present a more robust and extensible
