@@ -1,7 +1,7 @@
 
 Gem::Specification.new do |s|
   s.name = 'asciidoctor-sail'
-  s.version = '0.1'
+  s.version = '0.2'
   s.authors = ['Alasdair Armstrong']
   s.email = ['alasdair.armstrong@cl.cam.ac.uk']
   s.description = %q{Asciidoctor extension for documenting Sail models}
