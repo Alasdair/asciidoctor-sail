@@ -45,7 +45,7 @@ getting out of sync over time.
 Here we show how we can take a RISC-V instruction, and generate an
 encoding diagram matching those used in the existing Asciidoc port of
 the unpriv specification. We can also reference and typeset the Sail
-source from the authorative model, without requiring that it is simply
+source from the authoritative model, without requiring that it is simply
 copy-pasted.
 
 Consider the JAL instruction from the currently hand-written RISC-V
