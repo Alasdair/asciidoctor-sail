@@ -12,6 +12,9 @@ module Asciidoctor
       def get_sourcemap(doc, attrs)
         from = attrs.delete('from') { 'sail-doc' }
         source_map = doc.attr(from)
+        if source_map.nil?
+          raise "#{PLUGIN_NAME}: Document attribute :#{from}: does not exist, so we don't know where to find any sources"
+        end
         ::Asciidoctor::Sail::Sources.register(from, source_map)
         json = ::Asciidoctor::Sail::Sources.get(from)
         if json['version'] != VERSION
