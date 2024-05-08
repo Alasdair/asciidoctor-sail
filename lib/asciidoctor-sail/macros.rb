@@ -29,7 +29,7 @@ module Asciidoctor
           end
         end
 
-        return json, from
+        [json, from]
       end
 
       def get_type(attrs)
@@ -54,9 +54,7 @@ module Asciidoctor
         else
           path = json['file']
 
-          if not File.exist?(path)
-            raise "#{PLUGIN_NAME}: File #{path} does not exist"
-          end
+          raise "#{PLUGIN_NAME}: File #{path} does not exist" unless File.exist?(path)
 
           file = File.read(path)
           loc = json[part]['loc']
@@ -74,13 +72,11 @@ module Asciidoctor
       def get_sail_object(json, target, attrs)
         type = get_type(attrs)
         json = json["#{type}s"]
-        if json.nil?
-          raise "#{PLUGIN_NAME}: No Sail objects of type #{type}"
-        end
+        raise "#{PLUGIN_NAME}: No Sail objects of type #{type}" if json.nil?
+
         json = json[target]
-        if json.nil?
-          raise "#{PLUGIN_NAME}: No Sail #{type} #{target} could be found" 
-        end
+        raise "#{PLUGIN_NAME}: No Sail #{type} #{target} could be found" if json.nil?
+
         json = json[type]
 
         if attrs.key? 'clause'
@@ -111,13 +107,11 @@ module Asciidoctor
           grep = attrs.delete('grep')
           json.each do |child|
             source = read_source(child, 'body')
-            if source =~ Regexp.new(grep)
-              json = child
-            end
+            json = child if source =~ Regexp.new(grep)
           end
         end
 
-        return json, type
+        [json, type]
       end
 
       # Compute the minimum indentation for any line in a source block
@@ -150,11 +144,11 @@ module Asciidoctor
         split = get_split attrs
 
         source = ''
-        if split != ''
-          source = json['splits'][split]
-        else
-          source = read_source(json, part)
-        end
+        source = if split == ''
+                   read_source(json, part)
+                 else
+                   json['splits'][split]
+                 end
 
         source.strip! if strip
 
@@ -168,7 +162,7 @@ module Asciidoctor
           source = lines
         end
 
-        return source, type, from
+        [source, type, from]
       end
 
       def match_clause(desc, json)
@@ -176,20 +170,18 @@ module Asciidoctor
           return false unless json['type'] == 'app' && json['id'] == ::Regexp.last_match(1)
 
           patterns = json['patterns']
-          if patterns.length == 1
-            patterns = patterns[0]
-          end
+          patterns = patterns[0] if patterns.length == 1
 
           match_clause ::Regexp.last_match(2), patterns
         elsif desc.length.positive? && desc[0] == '('
           tuples = nil
-          if json.is_a? Array
-            tuples = json
-          elsif json['type'] == 'tuple'
-            tuples = json['patterns']
-          else
-            tuples = [json]
-          end
+          tuples = if json.is_a? Array
+                     json
+                   elsif json['type'] == 'tuple'
+                     json['patterns']
+                   else
+                     [json]
+                   end
 
           results = []
           desc[1...-1].split(',').each_with_index do |desc, i|
@@ -215,7 +207,7 @@ module Asciidoctor
 
       named :sail
 
-      @@ids = Set.new()
+      @@ids = Set.new
 
       def process(parent, target, attrs)
         logger.info "Including Sail source #{target} #{attrs}"
@@ -223,17 +215,17 @@ module Asciidoctor
 
         source, type, from = get_source parent.document, target, attrs, loc
 
-        if type == 'function' then
-          id = "#{from}-#{target}"
-        else
-          id = "#{from}-#{type}-#{target}"
-        end
+        id = if type == 'function'
+               "#{from}-#{target}"
+             else
+               "#{from}-#{type}-#{target}"
+             end
 
-        if not @@ids.member?(id) then
+        if @@ids.member?(id)
+          block = create_listing_block parent, source, { 'style' => 'source', 'language' => 'sail' }
+        else
           @@ids.add(id)
           block = create_listing_block parent, source, { 'id' => id, 'style' => 'source', 'language' => 'sail' }
-        else
-          block = create_listing_block parent, source, { 'style' => 'source', 'language' => 'sail' }
         end
 
         block
@@ -243,11 +235,11 @@ module Asciidoctor
     class SourceIncludeProcessor < ::Asciidoctor::Extensions::IncludeProcessor
       include SourceMacro
 
-      def handles? target
+      def handles?(target)
         target.start_with? 'sail:'
       end
 
-      def process doc, reader, target, attrs
+      def process(doc, reader, target, attrs)
         logger.info "Including Sail source #{target} #{attrs}"
         loc = reader.cursor_at_mark
 
@@ -263,11 +255,11 @@ module Asciidoctor
     class WavedromIncludeProcessor < ::Asciidoctor::Extensions::IncludeProcessor
       include SourceMacro
 
-      def handles? target
+      def handles?(target)
         target.start_with? 'sailwavedrom:'
       end
 
-      def process doc, reader, target, attrs
+      def process(doc, reader, target, attrs)
         target.delete_prefix! 'sailwavedrom:'
         json, from = get_sourcemap doc, attrs, reader.cursor_at_mark
         json, type = get_sail_object json, target, attrs
@@ -279,11 +271,11 @@ module Asciidoctor
           key = 'left_wavedrom'
         end
 
-        if attrs.any? { |k, v| (k.is_a? Integer) && v == 'raw' }
-          diagram = json[key]
-        else
-          diagram = "[wavedrom, ,]\n....\n#{json[key]}\n...."
-        end
+        diagram = if attrs.any? { |k, v| (k.is_a? Integer) && v == 'raw' }
+                    json[key]
+                  else
+                    "[wavedrom, ,]\n....\n#{json[key]}\n...."
+                  end
 
         reader.push_include diagram, target, target, 1, {}
         reader
@@ -293,11 +285,11 @@ module Asciidoctor
     class DocCommentIncludeProcessor < ::Asciidoctor::Extensions::IncludeProcessor
       include SourceMacro
 
-      def handles? target
+      def handles?(target)
         target.start_with? 'sailcomment:'
       end
 
-      def process doc, reader, target, attrs
+      def process(doc, reader, target, attrs)
         target.delete_prefix! 'sailcomment:'
         json, from = get_sourcemap doc, attrs, reader.cursor_at_mark
         json, type = get_sail_object json, target, attrs
@@ -307,9 +299,7 @@ module Asciidoctor
         end
 
         comment = json['comment']
-        if comment.nil?
-          raise "#{PLUGIN_NAME}: No documentation comment for Sail object #{target}"
-        end
+        raise "#{PLUGIN_NAME}: No documentation comment for Sail object #{target}" if comment.nil?
 
         reader.push_include comment, target, target, 1, attrs
         reader
