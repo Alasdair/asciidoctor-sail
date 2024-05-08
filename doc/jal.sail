@@ -1,4 +1,4 @@
-$[wavedrom _ offset[20..1] _ _ dest JAL]
+$[wavedrom "_ offset[20..1] _ _ dest JAL"]
 mapping clause encdec =
     RISCV_JAL(imm : bits(20) @ 0b0, rd)
     <->

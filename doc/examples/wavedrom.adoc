@@ -18,6 +18,8 @@ The diagram for the Add clause:
 \include::sailwavedrom:encdec[from=wavedrom,left-clause="Add(_, _, _)",type=mapping,right]
 ----
 
+include::sailwavedrom:encdec[from=wavedrom,left-clause="Add(_, _, _)",type=mapping,right]
+
 The diagram for the Sub clause. Note how we can use underscores to skip labels:
 
 [source,adoc]

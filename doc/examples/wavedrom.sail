@@ -7,13 +7,13 @@ val encdec : Instr <-> bits(32)
 
 union clause Instr = Add : (bits(5), bits(5), bits(5))
 
-$[wavedrom REG3 dest ADD input input]
+$[wavedrom "REG3 dest ADD input input"]
 mapping clause encdec =
     Add(rd, rx, ry) <-> 0xFFFF @ rd : bits(5) @ 0b1 @ rx : bits(5) @ ry : bits(5)
 
 union clause Instr = Sub : (bits(5), bits(5), bits(5))
 
-$[wavedrom REG3 _ SUB _ _]
+$[wavedrom "REG3 _ SUB _ _"]
 mapping clause encdec =
     Sub(rd, rx, ry) <-> 0xFFFF @ rd : bits(5) @ 0b1 @ rx : bits(5) @ ry : bits(5)
 

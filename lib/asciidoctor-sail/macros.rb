@@ -5,20 +5,28 @@ require 'set'
 module Asciidoctor
   module Sail
     module SourceMacro
+      include Asciidoctor::Logging
+
       # Should match Docinfo.docinfo_version in Sail OCaml source
       VERSION = 1
-      PLUGIN_NAME = 'Sail Asciidoc plugin'
+      PLUGIN_NAME = 'asciidoctor-sail'
 
-      def get_sourcemap(doc, attrs)
+      def get_sourcemap(doc, attrs, loc)
         from = attrs.delete('from') { 'sail-doc' }
         source_map = doc.attr(from)
         if source_map.nil?
-          raise "#{PLUGIN_NAME}: Document attribute :#{from}: does not exist, so we don't know where to find any sources"
+          info = "Document attribute :#{from}: does not exist, so we don't know where to find any sources"
+          logger.error %(#{logger.progname} (#{PLUGIN_NAME})) do
+            message_with_context info, source_location: loc
+          end
+          raise "#{PLUGIN_NAME}: #{info}"
         end
         ::Asciidoctor::Sail::Sources.register(from, source_map)
         json = ::Asciidoctor::Sail::Sources.get(from)
         if json['version'] != VERSION
-          raise "#{PLUGIN_NAME}: Version does not match version in source map #{source_map}"
+          logger.warn %(#{logger.progname} (#{PLUGIN_NAME})) do
+            message_with_context "Version does not match version in source map #{source_map}", source_location: loc
+          end
         end
 
         return json, from
@@ -132,8 +140,8 @@ module Asciidoctor
         indent
       end
 
-      def get_source(doc, target, attrs)
-        json, from = get_sourcemap doc, attrs
+      def get_source(doc, target, attrs, loc)
+        json, from = get_sourcemap doc, attrs, loc
         json, type = get_sail_object json, target, attrs
         dedent = attrs.any? { |k, v| (k.is_a? Integer) && %w[dedent unindent].include?(v) }
         strip = attrs.any? { |k, v| (k.is_a? Integer) && %w[trim strip].include?(v) }
@@ -210,7 +218,10 @@ module Asciidoctor
       @@ids = Set.new()
 
       def process(parent, target, attrs)
-        source, type, from = get_source parent.document, target, attrs
+        logger.info "Including Sail source #{target} #{attrs}"
+        loc = parent.document.reader.cursor_at_mark
+
+        source, type, from = get_source parent.document, target, attrs, loc
 
         if type == 'function' then
           id = "#{from}-#{target}"
@@ -237,9 +248,12 @@ module Asciidoctor
       end
 
       def process doc, reader, target, attrs
+        logger.info "Including Sail source #{target} #{attrs}"
+        loc = reader.cursor_at_mark
+
         target.delete_prefix! 'sail:'
 
-        source, type, from = get_source doc, target, attrs
+        source, type, from = get_source doc, target, attrs, loc
 
         reader.push_include source, target, target, 1, {}
         reader
@@ -255,7 +269,7 @@ module Asciidoctor
 
       def process doc, reader, target, attrs
         target.delete_prefix! 'sailwavedrom:'
-        json, from = get_sourcemap doc, attrs
+        json, from = get_sourcemap doc, attrs, reader.cursor_at_mark
         json, type = get_sail_object json, target, attrs
 
         key = 'wavedrom'
@@ -285,7 +299,7 @@ module Asciidoctor
 
       def process doc, reader, target, attrs
         target.delete_prefix! 'sailcomment:'
-        json, from = get_sourcemap doc, attrs
+        json, from = get_sourcemap doc, attrs, reader.cursor_at_mark
         json, type = get_sail_object json, target, attrs
 
         if json.nil? || json.is_a?(Array)
