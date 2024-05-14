@@ -11,6 +11,9 @@ class SailLexer < Rouge::RegexLexer
 
   id = /[a-zA-Z_?][a-zA-Z0-9_?#]*/
 
+  # Specially handle inserted cross-references
+  sailref = /sailref:.*\[[a-zA-Z_?][a-zA-Z0-9_?#]*\]/
+
   tyvar = /'[a-zA-Z_?][a-zA-Z0-9_?#]*/
 
   # We are careful with the definition of operators to ensure openers
@@ -100,6 +103,8 @@ class SailLexer < Rouge::RegexLexer
     rule operatorn, Operator
     rule operator2, Operator
     rule operator1, Operator
+
+    rule sailref, Name
 
     rule id do |m|
       name = m[0]

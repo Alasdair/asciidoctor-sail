@@ -1,9 +1,29 @@
 # frozen_string_literal: true
 
-require 'set'
+require 'delegate'
 
 module Asciidoctor
   module Sail
+    @@ids = {}
+
+    def self.seen_id?(id)
+      @@ids.key?(id)
+    end
+
+    def self.get_id(id)
+      return unless @@ids.key?(id)
+
+      @@ids[id]
+    end
+
+    def self.add_id(id)
+      @@ids[id] = id
+    end
+
+    def self.add_id_parent(id, parent)
+      @@ids[id] = parent
+    end
+
     module SourceMacro
       include Asciidoctor::Logging
 
@@ -32,6 +52,10 @@ module Asciidoctor
         [json, from]
       end
 
+      def cross_referencing?(doc)
+        doc.attr?('sail-xref')
+      end
+
       def get_type(attrs)
         attrs.delete('type') { 'function' }
       end
@@ -45,28 +69,31 @@ module Asciidoctor
       end
 
       def read_source(json, part)
+        return [json, nil] if json.is_a? String
+
+        json = json.fetch(part, json)
+
+        return [json, nil] if json.is_a? String
+
         source = ''
+        loc = json['loc']
 
-        if json.is_a? String
-          source = json
-        elsif json[part].is_a? String
-          source = json[part]
-        else
+        if json['contents'].nil?
           path = json['file']
-
           raise "#{PLUGIN_NAME}: File #{path} does not exist" unless File.exist?(path)
 
           file = File.read(path)
-          loc = json[part]['loc']
 
           # Get the source code, adjusting for the indentation of the first line of the span
           indent = loc[2] - loc[1]
 
           source = file.byteslice(loc[2], loc[5] - loc[2])
           source = (' ' * indent) + source
+        else
+          source = json['contents']
         end
 
-        source
+        [source, loc]
       end
 
       def get_sail_object(json, target, attrs)
@@ -76,6 +103,8 @@ module Asciidoctor
 
         json = json[target]
         raise "#{PLUGIN_NAME}: No Sail #{type} #{target} could be found" if json.nil?
+
+        links = json['links']
 
         json = json[type]
 
@@ -106,12 +135,12 @@ module Asciidoctor
         elsif attrs.key? 'grep'
           grep = attrs.delete('grep')
           json.each do |child|
-            source = read_source(child, 'body')
+            source, = read_source(child, 'body')
             json = child if source =~ Regexp.new(grep)
           end
         end
 
-        [json, type]
+        [json, type, links]
       end
 
       # Compute the minimum indentation for any line in a source block
@@ -134,21 +163,48 @@ module Asciidoctor
         indent
       end
 
+      def insert_links(source, links, source_loc, from, type)
+        return source if source_loc.nil? || links.nil?
+
+        cursor = source_loc[2]
+        link_end = nil
+        final = ''
+
+        source.each_byte do |b|
+          if !link_end.nil? && cursor == link_end
+            final += ']'
+            link_end = nil
+          else
+            links.each do |link|
+              if link['loc'][0] == cursor && link_end.nil?
+                final += "sailref:#{from}##{type}["
+                link_end = link['loc'][1]
+              end
+            end
+          end
+
+          final += b.chr
+          cursor += 1
+        end
+
+        final
+      end
+
       def get_source(doc, target, attrs, loc)
         json, from = get_sourcemap doc, attrs, loc
-        json, type = get_sail_object json, target, attrs
+        json, type, links = get_sail_object json, target, attrs
         dedent = attrs.any? { |k, v| (k.is_a? Integer) && %w[dedent unindent].include?(v) }
         strip = attrs.any? { |k, v| (k.is_a? Integer) && %w[trim strip].include?(v) }
 
         part = get_part attrs
         split = get_split attrs
+        source, source_loc = if split == ''
+                               read_source(json, part)
+                             else
+                               [json['splits'][split], nil]
+                             end
 
-        source = ''
-        source = if split == ''
-                   read_source(json, part)
-                 else
-                   json['splits'][split]
-                 end
+        source = insert_links(source, links, source_loc, from, type) if cross_referencing? doc
 
         source.strip! if strip
 
@@ -207,8 +263,6 @@ module Asciidoctor
 
       named :sail
 
-      @@ids = Set.new
-
       def process(parent, target, attrs)
         logger.info "Including Sail source #{target} #{attrs}"
         loc = parent.document.reader.cursor_at_mark
@@ -221,10 +275,10 @@ module Asciidoctor
                "#{from}-#{type}-#{target}"
              end
 
-        if @@ids.member?(id)
+        if ::Asciidoctor::Sail.seen_id?(id)
           block = create_listing_block parent, source, { 'style' => 'source', 'language' => 'sail' }
         else
-          @@ids.add(id)
+          ::Asciidoctor::Sail.add_id(id)
           block = create_listing_block parent, source, { 'id' => id, 'style' => 'source', 'language' => 'sail' }
         end
 
@@ -247,6 +301,16 @@ module Asciidoctor
 
         source, type, from = get_source doc, target, attrs, loc
 
+        hyper_ref = attrs.delete('ref')
+
+        id = if type == 'function'
+               "#{from}-#{target}"
+             else
+               "#{from}-#{type}-#{target}"
+             end
+
+        ::Asciidoctor::Sail.add_id_parent(id, hyper_ref) unless ::Asciidoctor::Sail.seen_id?(id)
+
         reader.push_include source, target, target, 1, {}
         reader
       end
@@ -261,8 +325,8 @@ module Asciidoctor
 
       def process(doc, reader, target, attrs)
         target.delete_prefix! 'sailwavedrom:'
-        json, from = get_sourcemap doc, attrs, reader.cursor_at_mark
-        json, type = get_sail_object json, target, attrs
+        json, = get_sourcemap doc, attrs, reader.cursor_at_mark
+        json, = get_sail_object json, target, attrs
 
         key = 'wavedrom'
         if attrs.any? { |k, v| (k.is_a? Integer) && v == 'right' }
@@ -291,8 +355,8 @@ module Asciidoctor
 
       def process(doc, reader, target, attrs)
         target.delete_prefix! 'sailcomment:'
-        json, from = get_sourcemap doc, attrs, reader.cursor_at_mark
-        json, type = get_sail_object json, target, attrs
+        json, = get_sourcemap doc, attrs, reader.cursor_at_mark
+        json, = get_sail_object json, target, attrs
 
         if json.nil? || json.is_a?(Array)
           raise "#{PLUGIN_NAME}: Could not find Sail object for #{target} when processing include::sailcomment. You may need to specify a clause."
@@ -303,6 +367,63 @@ module Asciidoctor
 
         reader.push_include comment, target, target, 1, attrs
         reader
+      end
+    end
+
+    # We want to swap out the source of a listing block to include
+    # cross-referenced source, but asciidoctor won't let us write to
+    # content directly.
+    class ListingDecorator < SimpleDelegator
+      attr_accessor :source
+
+      def content
+        source
+      end
+    end
+
+    # This class overrides the default asciidoctor html5 converter by
+    # post-processing the listing blocks that contain Sail code to
+    # insert cross referencing information.
+    class ListingLinkInserter < (Asciidoctor::Converter.for 'html5')
+      register_for 'html5'
+
+      SAILREF_REGEX = /sailref:(?<from>.*)#(?<type>.*)\[(?<sail_id>.*)\]/
+
+      def match_id(match, override_type = nil)
+        type = override_type.nil? ? match[:type] : override_type
+        if type == 'function'
+          "#{match[:from]}-#{match[:sail_id]}"
+        else
+          "#{match[:from]}-#{type}-#{match[:sail_id]}"
+        end
+      end
+
+      def source_with_link(match, ref)
+        if ref.nil?
+          "#{match.pre_match}#{match[:sail_id]}#{match.post_match}"
+        else
+          "#{match.pre_match}<a href=\"##{ref}\">#{match[:sail_id]}</a>#{match.post_match}"
+        end
+      end
+
+      def convert_listing(node)
+        return super unless node.style == 'source' && (node.attr 'language') == 'sail'
+
+        source = node.content
+
+        loop do
+          match = source.match(SAILREF_REGEX)
+          break if match.nil?
+
+          ref = ::Asciidoctor::Sail.get_id(match_id(match))
+          ref = ::Asciidoctor::Sail.get_id(match_id(match, 'val')) if ref.nil? && match[:type] == 'function'
+          source = source_with_link(match, ref)
+        end
+
+        decorated_node = ListingDecorator.new(node)
+        decorated_node.source = source
+
+        super(decorated_node)
       end
     end
   end
