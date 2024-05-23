@@ -2,6 +2,8 @@ ifndef::backend-pdf[]
 :sail-xref:
 endif::[]
 
+:sail-xref-external: https://github.com/Alasdair/asciidoctor-sail/blob/%commit%/doc/%file%#L%line%
+
 :xref-example: examples/xref.json
 
 === Automatic cross-referencing

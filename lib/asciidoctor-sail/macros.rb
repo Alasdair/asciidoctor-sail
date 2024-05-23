@@ -365,7 +365,7 @@ module Asciidoctor
         comment = json['comment']
         raise "#{PLUGIN_NAME}: No documentation comment for Sail object #{target}" if comment.nil?
 
-        reader.push_include comment, target, target, 1, attrs
+        reader.push_include comment.strip, nil, nil, 1, {}
         reader
       end
     end
@@ -385,6 +385,8 @@ module Asciidoctor
     # post-processing the listing blocks that contain Sail code to
     # insert cross referencing information.
     class ListingLinkInserter < (Asciidoctor::Converter.for 'html5')
+      include SourceMacro
+
       register_for 'html5'
 
       SAILREF_REGEX = /sailref:(?<from>.*)#(?<type>.*)\[(?<sail_id>.*)\]/
@@ -398,18 +400,40 @@ module Asciidoctor
         end
       end
 
-      def source_with_link(match, ref)
-        if ref.nil?
+      def instantiate_template(match, ext)
+        json = ::Asciidoctor::Sail::Sources.get(match[:from])
+        commit = json['git']['commit']
+        json, = get_sail_object json, match[:sail_id], { 'type' => match[:type] }
+        json = json.fetch('source', json)
+        file = json['file']
+        line = json['loc'][0]
+        ext = ext.gsub('%commit%', commit)
+        ext = ext.gsub('%file%', file)
+        ext = ext.gsub('%line%', line.to_s)
+        "<a href=\"#{ext}\">#{match[:sail_id]}</a>"
+      rescue Exception
+        match[:sail_id]
+      end
+
+      def source_with_link(match, ref, ext)
+        if ref.nil? && ext.nil?
           "#{match.pre_match}#{match[:sail_id]}#{match.post_match}"
+        elsif ref.nil?
+          "#{match.pre_match}#{instantiate_template(match, ext)}#{match.post_match}"
         else
           "#{match.pre_match}<a href=\"##{ref}\">#{match[:sail_id]}</a>#{match.post_match}"
         end
+      end
+
+      def external_template(document)
+        document.attr('sail-xref-external')
       end
 
       def convert_listing(node)
         return super unless node.style == 'source' && (node.attr 'language') == 'sail'
 
         source = node.content
+        ext = external_template node.document
 
         loop do
           match = source.match(SAILREF_REGEX)
@@ -417,7 +441,7 @@ module Asciidoctor
 
           ref = ::Asciidoctor::Sail.get_id(match_id(match))
           ref = ::Asciidoctor::Sail.get_id(match_id(match, 'val')) if ref.nil? && match[:type] == 'function'
-          source = source_with_link(match, ref)
+          source = source_with_link(match, ref, ext)
         end
 
         decorated_node = ListingDecorator.new(node)

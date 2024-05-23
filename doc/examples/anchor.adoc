@@ -1,4 +1,4 @@
-:anchor: examples/anchor.json
+:anchor-example: examples/anchor.json
 
 === Anchors
 
@@ -17,17 +17,22 @@ include::anchor.sail[]
 
 ==== Result
 
+The following AsciiDoc
 [source,adoc]
 ----
-\include::sailcomment:my_comment[from=anchor,type=anchor]
+:anchor-example: examples/anchor.json
 
-\include::sailcomment:main[from=anchor]
+\include::sailcomment:my_comment[from=anchor-example,type=anchor]
 
-sail::main[from=anchor]
+\include::sailcomment:main[from=anchor-example]
+
+sail::main[from=anchor-example]
 ----
 
-include::sailcomment:my_comment[from=anchor,type=anchor]
+will produce the following:
 
-include::sailcomment:main[from=anchor]
+include::sailcomment:my_comment[from=anchor-example,type=anchor]
 
-sail::main[from=anchor]
+include::sailcomment:main[from=anchor-example]
+
+sail::main[from=anchor-example]
