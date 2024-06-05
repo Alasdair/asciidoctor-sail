@@ -12,7 +12,7 @@ class SailLexer < Rouge::RegexLexer
   id = /[a-zA-Z_?][a-zA-Z0-9_?#]*/
 
   # Specially handle inserted cross-references
-  sailref = /sailref:.*\[[a-zA-Z_?][a-zA-Z0-9_?#]*\]/
+  sailref = /sailref:[^\[]*\[[^\]]*\]/
 
   tyvar = /'[a-zA-Z_?][a-zA-Z0-9_?#]*/
 

@@ -24,6 +24,17 @@ module Asciidoctor
       @@ids[id] = parent
     end
 
+    # A snippet is a small chunk of Sail source with an optional file and location
+    class Snippet
+      attr_accessor :source, :file, :loc
+
+      def initialize(source, file = nil, loc = nil)
+        @source = source
+        @file = file
+        @loc = loc
+      end
+    end
+
     module SourceMacro
       include Asciidoctor::Logging
 
@@ -68,32 +79,32 @@ module Asciidoctor
         attrs.delete('split') { '' }
       end
 
-      def read_source(json, part)
-        return [json, nil] if json.is_a? String
+      def read_snippet(json, part)
+        return ::Asciidoctor::Sail::Snippet.new(json) if json.is_a? String
 
         json = json.fetch(part, json)
 
-        return [json, nil] if json.is_a? String
+        return ::Asciidoctor::Sail::Snippet.new(json) if json.is_a? String
 
         source = ''
+        file = json['file']
         loc = json['loc']
 
         if json['contents'].nil?
-          path = json['file']
-          raise "#{PLUGIN_NAME}: File #{path} does not exist" unless File.exist?(path)
+          raise "#{PLUGIN_NAME}: File #{file} does not exist" unless File.exist?(file)
 
-          file = File.read(path)
+          contents = File.read(file)
 
           # Get the source code, adjusting for the indentation of the first line of the span
           indent = loc[2] - loc[1]
 
-          source = file.byteslice(loc[2], loc[5] - loc[2])
+          source = contents.byteslice(loc[2], loc[5] - loc[2])
           source = (' ' * indent) + source
         else
           source = json['contents']
         end
 
-        [source, loc]
+        ::Asciidoctor::Sail::Snippet.new(source, file, loc)
       end
 
       def get_sail_object(json, target, attrs)
@@ -135,7 +146,7 @@ module Asciidoctor
         elsif attrs.key? 'grep'
           grep = attrs.delete('grep')
           json.each do |child|
-            source, = read_source(child, 'body')
+            source = read_snippet(child, 'body').source
             json = child if source =~ Regexp.new(grep)
           end
         end
@@ -163,20 +174,20 @@ module Asciidoctor
         indent
       end
 
-      def insert_links(source, links, source_loc, from, type)
-        return source if source_loc.nil? || links.nil?
+      def insert_links(snippet, links, from, type)
+        return snippet.source if snippet.loc.nil? || snippet.file.nil? || links.nil?
 
-        cursor = source_loc[2]
+        cursor = snippet.loc[2]
         link_end = nil
         final = ''
 
-        source.each_byte do |b|
+        snippet.source.each_byte do |b|
           if !link_end.nil? && cursor == link_end
             final += ']'
             link_end = nil
           else
             links.each do |link|
-              if link['loc'][0] == cursor && link_end.nil?
+              if link['loc'][0] == cursor && link['file'] == snippet.file && link_end.nil?
                 final += "sailref:#{from}##{type}["
                 link_end = link['loc'][1]
               end
@@ -198,13 +209,17 @@ module Asciidoctor
 
         part = get_part attrs
         split = get_split attrs
-        source, source_loc = if split == ''
-                               read_source(json, part)
-                             else
-                               [json['splits'][split], nil]
-                             end
+        snippet = if split == ''
+                    read_snippet(json, part)
+                  else
+                    ::Asciidoctor::Sail::Snippet.new(json['splits'][split])
+                  end
 
-        source = insert_links(source, links, source_loc, from, type) if cross_referencing? doc
+        source = if cross_referencing? doc
+                   insert_links(snippet, links, from, type)
+                 else
+                   snippet.source
+                 end
 
         source.strip! if strip
 
@@ -389,7 +404,7 @@ module Asciidoctor
 
       register_for 'html5'
 
-      SAILREF_REGEX = /sailref:(?<from>.*)#(?<type>.*)\[(?<sail_id>.*)\]/
+      SAILREF_REGEX = /sailref:(?<from>[^#]*)#(?<type>[^\[]*)\[(?<sail_id>[^\]]*)\]/
 
       def match_id(match, override_type = nil)
         type = override_type.nil? ? match[:type] : override_type
@@ -401,6 +416,8 @@ module Asciidoctor
       end
 
       def instantiate_template(match, ext)
+        return match[:sail_id] unless /^[a-zA-Z0-9_#?]*$/ =~ match[:sail_id]
+
         json = ::Asciidoctor::Sail::Sources.get(match[:from])
         commit = json['git']['commit']
         json, = get_sail_object json, match[:sail_id], { 'type' => match[:type] }
@@ -409,6 +426,7 @@ module Asciidoctor
         line = json['loc'][0]
         ext = ext.gsub('%commit%', commit)
         ext = ext.gsub('%file%', file)
+        ext = ext.gsub('%filehtml%', file.gsub('.sail', '.html'))
         ext = ext.gsub('%line%', line.to_s)
         "<a href=\"#{ext}\">#{match[:sail_id]}</a>"
       rescue Exception

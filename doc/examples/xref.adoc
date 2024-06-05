@@ -42,7 +42,18 @@ function, which is below:
 
 sail::baz[from=xref-example]
 
-Cross referencing can be disabled by negating the `:sail-xref:` attribute in the standard AsciiDoc way:
+The `quux` function is not included in this document, so a link can be
+inserted to an external repository. This is controlled by the
+`:sail-xref-external:` document attribute, which if present provides a
+template for any such external links:
+
+[source,adoc]
+----
+:sail-xref-external: https://github.com/asciidoctor-sail/blob/%commit%/doc/%file%#L%line%
+----
+
+Cross referencing can be disabled by negating the `:sail-xref:`
+attribute in the standard AsciiDoc way:
 
 [source,adoc]
 ----
