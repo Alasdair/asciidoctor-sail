@@ -415,10 +415,16 @@ module Asciidoctor
         end
       end
 
-      def instantiate_template(match, ext)
+      def instantiate_template(document, match, ext)
         return match[:sail_id] unless /^[a-zA-Z0-9_#?]*$/ =~ match[:sail_id]
 
         json = ::Asciidoctor::Sail::Sources.get(match[:from])
+        if json.nil?
+          # It might be case that we never actually used the source we want to cross reference until now.
+          ::Asciidoctor::Sail::Sources.register(match[:from], document.attr(match[:from]))
+          json = ::Asciidoctor::Sail::Sources.get(match[:from])
+        end
+
         commit = json['git']['commit']
         json, = get_sail_object json, match[:sail_id], { 'type' => match[:type] }
         json = json.fetch('source', json)
@@ -433,11 +439,11 @@ module Asciidoctor
         match[:sail_id]
       end
 
-      def source_with_link(match, ref, ext)
+      def source_with_link(document, match, ref, ext)
         if ref.nil? && ext.nil?
           "#{match.pre_match}#{match[:sail_id]}#{match.post_match}"
         elsif ref.nil?
-          "#{match.pre_match}#{instantiate_template(match, ext)}#{match.post_match}"
+          "#{match.pre_match}#{instantiate_template(document, match, ext)}#{match.post_match}"
         else
           "#{match.pre_match}<a href=\"##{ref}\">#{match[:sail_id]}</a>#{match.post_match}"
         end
@@ -459,7 +465,7 @@ module Asciidoctor
 
           ref = ::Asciidoctor::Sail.get_id(match_id(match))
           ref = ::Asciidoctor::Sail.get_id(match_id(match, 'val')) if ref.nil? && match[:type] == 'function'
-          source = source_with_link(match, ref, ext)
+          source = source_with_link(node.document, match, ref, ext)
         end
 
         decorated_node = ListingDecorator.new(node)
