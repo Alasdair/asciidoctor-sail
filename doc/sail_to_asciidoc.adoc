@@ -256,3 +256,5 @@ include::examples/span.adoc[]
 include::examples/wavedrom.adoc[]
 
 include::examples/split.adoc[]
+
+include::examples/xref.adoc[]

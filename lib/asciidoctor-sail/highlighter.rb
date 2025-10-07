@@ -11,6 +11,9 @@ class SailLexer < Rouge::RegexLexer
 
   id = /[a-zA-Z_?][a-zA-Z0-9_?#]*/
 
+  # Specially handle inserted cross-references
+  sailref = /sailref:[^\[]*\[[^\]]*\]/
+
   tyvar = /'[a-zA-Z_?][a-zA-Z0-9_?#]*/
 
   # We are careful with the definition of operators to ensure openers
@@ -32,7 +35,7 @@ class SailLexer < Rouge::RegexLexer
     @keywords ||= Set.new %w[
       and as by match clause operator default end enum else forall foreach function mapping overload throw
       try catch if in let var ref pure monadic register return scattered struct then type union newtype with
-      val outcome instantiation impl repeat until while do bitfield forwards backwards to from
+      val outcome instantiation impl repeat until while do bitfield forwards backwards to from config
     ]
   end
 
@@ -100,6 +103,8 @@ class SailLexer < Rouge::RegexLexer
     rule operatorn, Operator
     rule operator2, Operator
     rule operator1, Operator
+
+    rule sailref, Name
 
     rule id do |m|
       name = m[0]
